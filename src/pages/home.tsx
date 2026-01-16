@@ -1,13 +1,5 @@
-import { useMemo } from "react"
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock3,
-  MailCheck,
-  Printer,
-  Shield,
-  Sparkles,
-} from "lucide-react"
+import { Link } from "react-router-dom"
+import { ArrowRight, CheckCircle2, Clock3, MailCheck, Printer, Shield } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,39 +13,38 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const setupTasks = [
-  { label: "Theme tokens copied", status: "Done" },
-  { label: "Tailwind + shadcn wiring", status: "Done" },
-  { label: "Auth & Supabase schema", status: "In progress" },
-  { label: "Borrow form + print view", status: "In progress" },
-  { label: "IT dashboard + SLA cards", status: "Next" },
-  { label: "Reminder cron + emails", status: "Next" },
+  { label: "Theme + shadcn wiring", status: "Done" },
+  { label: "Supabase schema + RLS", status: "Done" },
+  { label: "Public borrow form + magic link", status: "Done" },
+  { label: "Print layout with signatures", status: "Done" },
+  { label: "IT dashboard + actions", status: "Done" },
+  { label: "Reminder job + CI pipeline", status: "In progress" },
 ]
 
 export default function HomePage() {
-  const completed = useMemo(
-    () => setupTasks.filter((t) => t.status === "Done").length,
-    []
-  )
-
   return (
     <>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">Asset Borrow Log</p>
-          <h1 className="text-2xl font-bold tracking-tight">Project cockpit</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Borrow, track, and return on time</h1>
           <p className="text-muted-foreground">
-            React + Vite + shadcn + Supabase, themed to Yngen ITSM. Placeholder logo in
-            header will be swapped once provided.
+            Public borrow form with magic-link confirmation, IT dashboard with SLA cards and overdue
+            cues, printable agreements with signature blocks, and daily reminders.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print spec
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/request">
+              <Printer className="mr-2 h-4 w-4" />
+              Borrow &amp; print
+            </Link>
           </Button>
-          <Button size="sm">
-            Continue build
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button size="sm" asChild>
+            <Link to="/dashboard">
+              Go to dashboard
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </div>
@@ -61,10 +52,7 @@ export default function HomePage() {
       <Card>
         <CardHeader className="pb-3">
           <CardDescription>Progress</CardDescription>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="h-4 w-4 text-primary" />
-            {completed} / {setupTasks.length} milestones
-          </CardTitle>
+          <CardTitle className="text-lg">Delivery checklist</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -122,7 +110,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-2 rounded-md border border-dashed bg-muted/50 p-3">
                 <Printer className="h-4 w-4 text-muted-foreground" />
-                <span>Post-submit print view includes signatures and placeholder logo.</span>
+                <span>Print-ready copy includes borrower + IT signatures and reprint guidance.</span>
               </div>
             </TabsContent>
             <TabsContent value="it" className="space-y-3 pt-3 text-sm text-muted-foreground">
@@ -132,7 +120,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-2 rounded-md border border-dashed bg-muted/50 p-3">
                 <Clock3 className="h-4 w-4 text-muted-foreground" />
-                <span>SLA cards: active, due soon (24h), overdue, returned this week, avg duration.</span>
+                <span>SLA cards, table/card views, quick actions for return/extend/lost, and activity log.</span>
               </div>
             </TabsContent>
           </Tabs>
