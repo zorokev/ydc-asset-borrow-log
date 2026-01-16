@@ -5,6 +5,7 @@ import BorrowFormPage from "@/pages/borrow-form"
 import DashboardPage from "@/pages/dashboard"
 import HomePage from "@/pages/home"
 import RequestDetailPage from "@/pages/request-detail"
+import { Protected } from "@/components/auth/protected"
 
 export const router = createBrowserRouter([
   {
@@ -21,11 +22,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "dashboard",
-        element: <DashboardPage />,
+        element: (
+          <Protected>
+            <DashboardPage />
+          </Protected>
+        ),
       },
       {
         path: "request/:id",
-        element: <RequestDetailPage />,
+        element: (
+          <Protected>
+            <RequestDetailPage />
+          </Protected>
+        ),
       },
     ],
   },

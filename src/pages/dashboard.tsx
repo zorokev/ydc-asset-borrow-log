@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { CheckCircle2, Eye, List, MoreHorizontal, PackageSearch } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -28,6 +28,13 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Toggle } from "@/components/ui/toggle"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { BorrowRequest, BorrowStatus } from "@/types/borrow"
 import { useBorrowRequests } from "@/hooks/use-borrow-requests"
 
@@ -127,8 +134,27 @@ export default function DashboardPage() {
   const [selected, setSelected] = useState<BorrowRequest | null>(null)
   const [dueInput, setDueInput] = useState("")
   const [reasonInput, setReasonInput] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<BorrowStatus | "all">("all")
+  const [page, setPage] = useState(1)
 
   const items = data.length ? data : mockRequests
+  const pageSize = 8
+
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    return items
+      .filter((item) => {
+        if (!term) return true
+        const haystack = `${item.borrower_name} ${item.borrower_email} ${item.department} ${item.asset_type} ${item.asset_label ?? ""} ${item.ticket_id}`.toLowerCase()
+        return haystack.includes(term)
+      })
+      .filter((item) => (statusFilter === "all" ? true : item.status === statusFilter))
+  }, [items, searchTerm, statusFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   const stats = useMemo(() => {
     const active = items.filter((r) => r.status !== "returned")
@@ -163,6 +189,10 @@ export default function DashboardPage() {
     setReasonInput("")
   }
 
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, statusFilter])
+
   return (
     <>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between print-hidden">
@@ -194,6 +224,54 @@ export default function DashboardPage() {
             <List className="mr-2 h-4 w-4" />
             Table
           </Toggle>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between print-hidden">
+        <div className="flex w-full flex-col gap-2 md:flex-row md:items-center">
+          <Input
+            placeholder="Search borrower, asset, or ticket"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="md:max-w-sm"
+          />
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as BorrowStatus | "all")}
+          >
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {Object.keys(statusColors).map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+          >
+            Prev
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
@@ -254,9 +332,15 @@ export default function DashboardPage() {
         For returns, submit signed copy to IT. Contact IT desk if overdue or due soon items cannot be returned by the deadline.
       </div>
 
-      {viewMode === "grid" ? (
+      {filtered.length === 0 ? (
+        <Card className="print-hidden">
+          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+            No results match your search or filter.
+          </CardContent>
+        </Card>
+      ) : viewMode === "grid" ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => {
+          {pageItems.map((item) => {
             const overdue = isOverdue(item)
             const dueSoon = isDueSoon(item)
             return (
@@ -344,7 +428,7 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => {
+              {pageItems.map((item) => {
                 const overdue = isOverdue(item)
                 const dueSoon = isDueSoon(item)
                 return (

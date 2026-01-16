@@ -20,15 +20,16 @@
 - 2026-01-16: Action menus hardened (stop-prop + aria labels), print snapshot cleaned to ASCII separators, dashboard action test stabilized; all Vitest suites green.
 - 2026-01-16: Env templates aligned to the live Supabase project values; local + example files consistent.
 - 2026-01-16: Added auto-provision trigger for profiles on new auth users; added Resend-based reminder script + scheduled GitHub Action.
+- 2026-01-16: Added IT route guard, dashboard search/filter/pagination, and CI workflow (test + build).
 
 ## Status Summary
 - Phase 0: Done
 - Phase 1: Backend schema/RLS implemented; seeding pending
 - Phase 2: Done
 - Phase 3: Done
-- Phase 4: Mostly done (auth gate for IT-only routes pending; search/filter/pagination pending; full live data wiring in all views ongoing)
+- Phase 4: Mostly done (guard added; search/filter/pagination added; full live data wiring in all views ongoing)
 - Phase 5: In progress (reminder cron/email scaffolded via GitHub Action + Resend script; SMTP/Resend keys still needed)
-- Phase 6: In progress (RTL coverage in place for form/dashboard/detail; CI/UAT and reminder logic tests pending)
+- Phase 6: In progress (RTL coverage in place for form/dashboard/detail; CI workflow added; UAT and reminder logic tests pending)
 
 ## Phase 0 - Foundations
 - Create repo/scaffold with Vite + React + TypeScript; add shadcn UI and import Yngen ITSM theme tokens/components. ✅
