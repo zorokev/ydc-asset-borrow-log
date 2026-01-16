@@ -1,0 +1,24 @@
+name: Reminder Emails
+
+on:
+  schedule:
+    - cron: "0 23 * * *" # Daily at 07:00 PH time (23:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install deps
+        run: npm ci
+      - name: Send reminders
+        run: npm run reminders
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
