@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# Asset Borrow Log
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite + TypeScript + shadcn UI, themed to Yngen ITSM, backed by Supabase. Tracks borrowed IT assets with public magic-link form, IT dashboard (card/table views, SLA cards, overdue cues), printable agreements with signatures, activity log, and reminder emails.
 
-Currently, two official plugins are available:
+## Stack
+- React, Vite, TypeScript, Tailwind + shadcn UI
+- Supabase (Auth, Postgres, RLS, email)
+- Vitest + Testing Library
+- GitHub Actions: CI (test/build) and daily reminders
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Setup
+1) Install deps: `npm install`
+2) Env: copy `.env.example` to `.env.local` and set:
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (server jobs)
+   - `SMTP_FROM`, `RESEND_API_KEY` (for reminders; leave blank to dry-run)
+3) Run dev server: `npm run dev`
+4) Tests: `npm test`
+5) Build: `npm run build`
 
-## React Compiler
+## Supabase
+- Apply schema: run `supabase/schema.sql` in SQL Editor or `supabase db push`.
+- Auth: enable magic link; IT staff/manager users go in Supabase Auth; trigger auto-creates `profiles` rows. Set `profiles.role` to `staff` or `manager`.
+- Seed (dev/demo): create auth users for `it.staff@example.com` and `manager@example.com`, then run `supabase/seed.sql` in SQL Editor (service role). Swap emails to your real staff if desired.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Reminders (Resend)
+- Script: `npm run reminders` (dry-run logs if `RESEND_API_KEY` is empty).
+- Scheduler: `.github/workflows/reminders.yml` runs daily at 23:00 UTC; set GitHub secrets:
+  - `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `SMTP_FROM`
+- Emails: borrowers (due/overdue) and IT staff (summary). Uses `SMTP_FROM` as sender.
 
-## Expanding the ESLint configuration
+## CI
+- `.github/workflows/ci.yml` runs tests and build on push/PR to `main`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Key UI Paths
+- Borrow form: `/request` (public, magic-link gated submit, default +1 day due, print-ready).
+- Dashboard: `/dashboard` (IT-only guard, search/filter, pagination, card/table views, actions).
+- Request detail: `/request/:id` (IT-only, status/extend/lost, activity log, print view).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Printing
+- Print-friendly styles hide chrome and include signature blocks; detail page and post-submit views are printable. Add your logo at `public/logo.png` (already added).
