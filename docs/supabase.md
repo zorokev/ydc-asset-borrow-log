@@ -25,6 +25,9 @@
 - Borrower flow: call `supabase.auth.signInWithOtp({ email })` before insert; proceed with submission only when session email matches `borrower_email`.
 - IT staff: create users in Auth; the `handle_new_auth_user` trigger will auto-create a `profiles` row. Update `profiles.role` to `staff` or `manager` as needed.
 
+## Seeding
+- Use `supabase/seed.sql` for local/dev sample data. Run in SQL Editor or `supabase db push --file supabase/seed.sql` with service role. Replace UUIDs with real auth user IDs for non-dev.
+
 ## Defaults and Constraints
 - Default status `pending`, overdue auto-applied when `due_at` is past (unless returned).
 - `borrowed_at` defaults to `now()`, `due_at` must be future (`due_at > borrowed_at`).

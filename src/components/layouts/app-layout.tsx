@@ -14,14 +14,18 @@ export function AppLayout() {
       <header className="border-b print-hidden">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-sm font-semibold text-primary">
-              ABL
-            </div>
+            <img
+              src="/logo.png"
+              alt="Company logo"
+              className="h-9 w-9 rounded-md border bg-white object-contain shadow-sm"
+              onError={(e) => {
+                const target = e.currentTarget
+                target.style.display = "none"
+              }}
+            />
             <div>
               <p className="text-sm font-semibold leading-tight">Asset Borrow Log</p>
-              <p className="text-xs text-muted-foreground leading-tight">
-                Placeholder logo; matches Yngen ITSM theme
-              </p>
+              <p className="text-xs text-muted-foreground leading-tight">Yngen ITSM-themed</p>
             </div>
           </div>
           <nav className="flex items-center gap-2">
