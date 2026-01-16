@@ -21,6 +21,7 @@
 - 2026-01-16: Env templates aligned to the live Supabase project values; local + example files consistent.
 - 2026-01-16: Added auto-provision trigger for profiles on new auth users; added Resend-based reminder script + scheduled GitHub Action.
 - 2026-01-16: Added IT route guard, dashboard search/filter/pagination, and CI workflow (test + build).
+- 2026-01-16: Added YDC logo asset; seed script now resolves staff IDs by email to avoid FK errors.
 
 ## Status Summary
 - Phase 0: Done
