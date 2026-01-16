@@ -1,13 +1,14 @@
 /**
  * Daily reminder sender for due/overdue borrow requests.
- * Uses Supabase service role to query `borrow_requests` and sends emails via Resend if `RESEND_API_KEY` is set.
- * If no Resend key is provided, it will log the messages instead of sending.
+ * Uses Supabase service role to query `borrow_requests` and sends emails via Brevo (preferred) or Resend HTTP API.
+ * If no key is provided, it will log the messages instead of sending.
  */
 import { createClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const resendApiKey = process.env.RESEND_API_KEY
+const brevoApiKey = process.env.BREVO_API_KEY
 const fromEmail = process.env.SMTP_FROM || "itdept@ydc.com.ph"
 
 if (!supabaseUrl || !serviceRoleKey) {
@@ -66,31 +67,55 @@ async function fetchStaffRecipients() {
   return Array.from(new Set(emails))
 }
 
-async function sendResendEmail({ to, subject, text, html }) {
-  if (!resendApiKey) {
-    console.log(`[DRY-RUN] Would send to ${to}: ${subject}\n${text}`)
+async function sendHttpEmail({ to, subject, text, html }) {
+  // Brevo (Sendinblue) HTTP API
+  if (brevoApiKey) {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": brevoApiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { email: fromEmail },
+        to: (Array.isArray(to) ? to : [to]).map((email) => ({ email })),
+        subject,
+        textContent: text,
+        htmlContent: html,
+      }),
+    })
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Brevo failed (${response.status}): ${body}`)
+    }
     return
   }
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: Array.isArray(to) ? to : [to],
-      subject,
-      text,
-      html,
-    }),
-  })
+  // Resend fallback
+  if (resendApiKey) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        text,
+        html,
+      }),
+    })
 
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Resend failed (${response.status}): ${body}`)
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Resend failed (${response.status}): ${body}`)
+    }
+    return
   }
+
+  console.log(`[DRY-RUN] Would send to ${to}: ${subject}\n${text}`)
 }
 
 function formatLine(item) {
@@ -155,7 +180,7 @@ async function notifyBorrowers(overdue, dueSoon) {
       items.filter((i) => overdue.includes(i)),
       items.filter((i) => dueSoon.includes(i))
     )
-    await sendResendEmail({
+    await sendHttpEmail({
       to: email,
       subject: "Asset Borrow Reminder",
       text: `Please return or extend your borrowed asset(s):\n\n${section}`,
@@ -174,7 +199,7 @@ async function notifyIT(overdue, dueSoon, itRecipients) {
   if (!targets || targets.length === 0) return
   const section = buildEmailSections(overdue, dueSoon)
   const html = buildHtml(overdue, dueSoon)
-  await sendResendEmail({
+  await sendHttpEmail({
     to: targets,
     subject: "Borrow queue summary (due/overdue)",
     text: `Daily summary of due/overdue items:\n\n${section}`,

@@ -23,6 +23,7 @@
 - 2026-01-16: Added IT route guard, dashboard search/filter/pagination, and CI workflow (test + build).
 - 2026-01-16: Added YDC logo asset; seed script now resolves staff IDs by email to avoid FK errors.
 - 2026-01-16: Reminder script now supports test mode and IT fallback; Resend domain verification required for SMTP_FROM.
+- 2026-01-16: Added Brevo (Sendinblue) HTTP email option for reminders as an alternative to Resend.
 
 ## Status Summary
 - Phase 0: Done

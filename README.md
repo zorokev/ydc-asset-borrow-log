@@ -29,6 +29,7 @@ React + Vite + TypeScript + shadcn UI, themed to Yngen ITSM, backed by Supabase.
   - `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `SMTP_FROM`
 - Emails: borrowers (due/overdue) and IT staff (summary). Uses `SMTP_FROM` as sender.
 - Resend requires a verified sending domain matching `SMTP_FROM`. Verify your domain in Resend before sending.
+- Brevo (Sendinblue) supported: set `BREVO_API_KEY`; if set, reminders send via Brevo instead of Resend (no domain verification needed if you verify a single sender in Brevo).
 
 ## CI
 - `.github/workflows/ci.yml` runs tests and build on push/PR to `main`.
