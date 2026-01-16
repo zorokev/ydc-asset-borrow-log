@@ -28,6 +28,7 @@ React + Vite + TypeScript + shadcn UI, themed to Yngen ITSM, backed by Supabase.
 - Scheduler: `.github/workflows/reminders.yml` runs daily at 23:00 UTC; set GitHub secrets:
   - `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `SMTP_FROM`
 - Emails: borrowers (due/overdue) and IT staff (summary). Uses `SMTP_FROM` as sender.
+- Resend requires a verified sending domain matching `SMTP_FROM`. Verify your domain in Resend before sending.
 
 ## CI
 - `.github/workflows/ci.yml` runs tests and build on push/PR to `main`.

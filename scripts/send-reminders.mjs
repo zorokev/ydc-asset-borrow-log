@@ -134,6 +134,10 @@ function buildHtml(overdue, dueSoon) {
 }
 
 async function notifyBorrowers(overdue, dueSoon) {
+  if (process.env.REMINDERS_TEST_MODE === "true") {
+    console.log("[TEST MODE] Skipping borrower emails.")
+    return
+  }
   const grouped = new Map()
   for (const item of [...overdue, ...dueSoon]) {
     if (!item.borrower_email) continue
@@ -161,11 +165,17 @@ async function notifyBorrowers(overdue, dueSoon) {
 }
 
 async function notifyIT(overdue, dueSoon, itRecipients) {
-  if (!itRecipients.length) return
+  let targets = itRecipients
+  // Fallback: use SMTP_FROM as a summary recipient when no staff profiles are found.
+  if ((!targets || targets.length === 0) && fromEmail) {
+    targets = [fromEmail]
+    console.log(`[Info] No staff profiles found; falling back to SMTP_FROM ${fromEmail}`)
+  }
+  if (!targets || targets.length === 0) return
   const section = buildEmailSections(overdue, dueSoon)
   const html = buildHtml(overdue, dueSoon)
   await sendResendEmail({
-    to: itRecipients,
+    to: targets,
     subject: "Borrow queue summary (due/overdue)",
     text: `Daily summary of due/overdue items:\n\n${section}`,
     html: `<p>Daily summary of due/overdue items:</p>${html}`,
